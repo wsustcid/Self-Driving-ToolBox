@@ -6,7 +6,8 @@
     - [1.4.1 任务规划](#141-任务规划)
     - [1.4.2 行为规划](#142-行为规划)
     - [1.4.3 局部规划](#143-局部规划)
-  - [1.5 补充阅读材料](#15-补充阅读材料)
+  - [1.5 补充阅读](#15-补充阅读)
+  - [1.6 课后作业](#16-课后作业)
 
 
 # 1. 规划问题
@@ -23,19 +24,19 @@
   - 是最高层级的规划，其中低层级的细节被剥离出来后续单独处理
   - 其目标不仅仅是找到一条路径即可，还要保证这条路径是最高效的（以时间或距离为度量指标）
 
-**与道路结构有关的场景**
+**与道路结构有关的场景**  
 道路结构通过车道边界和一些规则要素来影响具体驾驶场景
   - 车道保持: 车道保持是最简单的驾驶场景，其主要任务就是通过最小化与中心线的偏差，使车辆能够沿着车道中心线行驶，同时为了任务的高效性，还需要使车辆维持一定的参考速度
   - 车道变换: 车道变换是更复杂的驾驶场景，不同场景下有不同的变换路线，其变换路线取决与车辆的速度及加速度限制，并且可执行的时间域也影响车道变换的激进度
   - 左/右转: 左右转场景常发生在十字路口，与车道变换类似，其转向的具体路线与车道的弯曲程度有关，同时，周围环境的状态也决定了车辆是否拥有转向的能力。
-  - U-Turn: U-Turn在执行高效的车辆掉头时非常有用，同样，U-Turn的具体路线与车辆的速度和加速度限制有关。注意：并不是所有的十字路口都是可以执行U-Turn的。
+  - U-Turn: U-Turn在执行高效的车辆掉头时非常有用，同样，U-Turn的具体路线与车辆的速度和加速度限制有关。但需要注意并不是所有的十字路口都是可以执行U-Turn的
 
-**与障碍物有关的场景**
-  - 静态和动态障碍物同样影响驾驶场景
+**与障碍物有关的场景**  
+静态和动态障碍物同样会影响驾驶场景
   - 静态障碍物限制了我们的行车轨迹可以占据的位置
   - 最重要的动态障碍物是自身车辆前方的车辆：为了安全起见，需要与其保持一定的时间间隔
   - 动态障碍物同样影响车辆转弯和车道变换：根据其位置和速度的不同，留给自动驾驶车辆的可执行时间也是不同的，因此我们需要利用估计和预测来计算这些时间窗口
-  - 最后要注意的是，不同的动态障碍物在场景中有不同的特性和行为，如自行车、卡车和行人，要分别进行分析处理。
+  - 最后要注意的是，不同的动态障碍物在场景中有不同的特性和行为，如自行车、卡车和行人，要分别进行分析处理
 
 **行为**
   - 速度跟踪（参考速度或速度限制）
@@ -63,7 +64,7 @@
   - 如果车辆引擎施加的力超过了轮胎产生的摩擦力，则轮胎与路面之间会产生滑动
   - 因此为了保证车辆的可控性和稳定性，车辆最好保持在摩擦力椭圆区域内
   - 更进一步的，在非紧急状态下，为了保证乘客的舒适度，最好把车辆加速度限制在如图所示的"舒适矩形"区域内，这就产生了一个对车辆可行加速度的一个更强的限制
-<div align=center><img src=./figs/friction_ellipse.png width=200></div>
+<div align=center><img src=./figs/friction_ellipse.png width=300></div>
 
 **车辆动力学与曲率的联合约束**
   - 摩擦力和舒适度约束产生了对车辆横向加速度的限制：$a_{lat} \leq a_{lat_{max}}$
@@ -72,7 +73,7 @@
   - 将上述三个等式联立，可得出车辆速度同时受限与路径曲率和横向加速度：
     $$v^2 \leq \frac{a_{lat_{max}}}{\kappa}$$
 
-**静态障碍物产生的约束**
+**静态障碍物产生的约束**  
 我们通常使用占据栅格地图来存储障碍物的位置，静态障碍物通过对规划空间的部分区域进行锁定来产生约束。在实际规划时，通过执行碰撞检测来判断静态障碍物约束是否满足：
   - Can check for collisions using the swath of the vehicle's path
   - 或者沿着车辆的行进路线检测最近的障碍物
@@ -86,12 +87,11 @@
     - 最为保守的策略是根据周围智能体所有可能的行为来对车辆运动产生约束，这样会造成整个运动规划问题 over-constrained，最终无法找到可行解。
 
 **道路规则交规元素产生的约束**
-  - 首先最直观的是车道限制了我们行车路线
-  - 另外，交规的存在让我们可以针对其他智能体的行为进行informed decision，并且基于对他们行为的预测可以进一步减少我们的搜索空间
-  - 交规的隐含的要求车辆应尽可能的避免离开当前车道，除非这么做是合法的
+  - 首先最直观的是车道限制了我们行车路线，车辆应尽可能的避免离开当前车道，除非这么做是合法的
   - 并且告知车辆在哪里进行转弯操作是安全的
+  - 另外，交规的存在让我们可以针对其他智能体的行为进行informed decision，并且基于对他们行为的预测可以进一步减少我们的搜索空间
   - 除此之外，同时存在一些软约束：比如与前方车辆保持一定的时间间隔
-  - 最后，一些Regulatory elements，如交通等，交通标志（停止标志、限速标志等）同样对车辆的可允许行为做出了限制
+  - 最后，一些Regulatory elements，如交通灯，交通标志（停止标志、限速标志等）同样对车辆的可允许行为做出了限制
 
 
 ## 1.3 运动规划中的目标方程
@@ -129,10 +129,12 @@
 ### 1.4.1 任务规划
 任务规划是最高层级规划，主要关注于无人驾驶的驾驶任务：在地图层级导航至目的地
   - 任务规划把低层级的细节进行了剥离
-  - 也可以通过图搜索的方法进行解决，如Dijkstra, A*等
+  - 一般通过图搜索的方法进行解决，如Dijkstra, A*等
 
 ### 1.4.2 行为规划
-行为规划主要关注为了遵守道路交通规则所需要的高层级决策行为，可以通过在给定驾驶场景下识别该机动行为是否安全来实现。行为规划器在做决策时需要将行人、车辆、自行车等纳入考虑，同时也关注交规元素，比如交通灯和停止标志。
+行为规划主要关注为了遵守道路交通规则所需要的高层级决策行为，可以通过在给定驾驶场景下识别该机动行为是否安全来实现。
+  - 行为规划器在做决策时需要将行人、车辆、自行车等纳入考虑
+  - 同时也需要关注交规元素，比如交通灯和停止标志。
 
 **有限状态机**  
 有限状态机由状态和状态之间的转移组成：
@@ -155,16 +157,16 @@
 <div align=center><img src=./figs/behavioral_planner_RL.png width=300></div>
 
 ### 1.4.3 局部规划
-局部规划器用于产生满足运动学约束的无碰撞路径，同时也要保证乘客的舒适性和速度安全性指标。为了降低问题的复杂度，通常将其分解为路径规划和速度生成个步骤完成。
+局部规划器用于产生满足运动学约束的无碰撞路径，同时也要保证乘客的舒适性和速度安全性指标。为了降低问题的复杂度，通常将其分解为路径规划和速度生成两个步骤完成。
 
-**基于采样的规划器**
+**基于采样的规划器**   
 该方法通过对控制输入进行随机采样从而实现对工作空间的快速探索。
   - 通过对新的目标点进行碰撞检查，而后不断将其加入到已经探索过空间中；
   - 其优势是速度较快，但缺点是产生的路径往往质量较差
 
-**基于变分的规划器**
+**基于变分的规划器**   
 该方法通过对 泛函 损失函数进行优化，从而获得最优的轨迹(Trajectory)，因此该方法是将轨迹规划和速度规划放到放到一起考虑同时解决的。
-  - 其目标方程中包含对碰撞和车辆动力旭二的惩罚：$min_{\delta x}J(x+\delta x)$
+  - 其目标方程中包含对碰撞和车辆动力学的惩罚：$min_{\delta x}J(x+\delta x)$
 
 **网格(Lattice)规划器**  
 网格规划器通过限制机器人的可行动作来对搜索空间进行约束，机器人允许的动作的集合被称为控制集合
@@ -175,8 +177,10 @@
 <div align=center><img src=./figs/local_planner_velocity.png width=500></div>
 
 
-## 1.5 补充阅读材料
+## 1.5 补充阅读
   - P. Polack, F. Altche, B. Dandrea-Novel, and A. D. L. Fortelle, “[The kinematic bicycle model: A consistent model for planning feasible trajectories for autonomous vehicles](https://ieeexplore.ieee.org/abstract/document/7995816)” 2017 IEEE Intelligent Vehicles Symposium (IV), 2017.  Gives an overview of the kinematic bicycle model.
   - S. Karaman and E. Frazzoli, “[Sampling-based optimal motion planning for non-holonomic dynamical systems](http://amav.gatech.edu/sites/default/files/papers/icra2013.Karaman.Frazzoli.submitted.pdf),” 2013 IEEE International Conference on Robotics and Automation, 2013. Introduces the RRT* algorithm as an example of sampling-based planning.
   - N. Ratliff, M. Zucker, J. A. Bagnell, and S. Srinivasa, “[CHOMP: Gradient optimization techniques for efficient motion planning](https://kilthub.cmu.edu/articles/journal_contribution/CHOMP_Gradient_Optimization_Techniques_for_Efficient_Motion_Planning/6552254/1),” 2009 IEEE International Conference on Robotics and Automation, 2009. Introduces the CHOMP algorithm as an example of applying calculus of variations to planning.
   - M. Pivtoraiko, R. A. Knepper, and A. Kelly, “[Differentially constrained mobile robot motion planning in state lattices](https://www.ri.cmu.edu/pub_files/2009/3/ross.pdf),” Journal of Field Robotics, vol. 26, no. 3, pp. 308-333, 2009. Introduces the state lattice planning method.
+
+## 1.6 [课后作业](assignments/README.md)

@@ -92,9 +92,10 @@
 
   1. 首先，我们定义传感器相对于占据栅格地图坐标系的位置为$x_{1,t}, x_{2,t}$, 朝向为$x_{3,t}$
   2. 其次，基于雷达数据，我们将测量地图划分为三种不同的区域
-    - No Information: 即激光雷达射线无法到达的区域，因此无法提供任何信息
-    - Low Probability: 即射线正常通过没有遇到任何障碍物的区域
-    - High Probability: 即射线与障碍物接触后发生反射的区域(非最大反射距离)
+     - No Information: 即激光雷达射线无法到达的区域，因此无法提供任何信息
+     - Low Probability: 即射线正常通过没有遇到任何障碍物的区域
+     - High Probability: 即射线与障碍物接触后发生反射的区域(非最大反射距离)
+   
    <div align=center><img src=./figs/imm_1.png width=400 ></div>
 
   3. 为了将这些区域映射到测量地图上，我们需要为每个网格定义其关于车辆的相对距离(Relative Range)和相对方位(Relative Bearing), 以及一个Cloest Relative Bearing。基于这两个指标，对于每个网格，我们通过寻找相对距离和相对方位与测量值最接近的网格来确定该测量值所属的网格：
@@ -134,7 +135,7 @@
 
 上述两种方法在开源的点云库PCL和计算机视觉库OpenCV中都已经有具体实现
 
-**车辆上方与地面点云的移除**
+**车辆上方与地面点云的移除**  
 首先，车辆上方点云的移除非常简单，直接移除固定高度（如2.4m）以上的点即可。但这种操作基于的假设是地面是平的，所以具体使用时要小心，同时还要考虑悬垂的树木、电线、桥梁和标志等信息。但地面点云的移除却由于其复杂的构成较难精准的移除：
   - 首先是不同的道路几何形状带来的难度：包括用于排水的变化的凹度、不同的slop和bank angle、曲率等
   - 其次是路沿在不同的位置有不同的高度，并且道路边界在点云数据中并不总是能够清楚的定义，这些变化有可能导致部分道路边缘或不可驾驶区域作为地面被移除
@@ -145,7 +146,8 @@
 **动态目标移除**  
 通过感知模块对场景中的动态目标进行识别与跟踪，可以获得动态目标在点云中的3D的bounding box，从而可以移除其范围的点，同时对于bounding box的size通常也会增加一个小的阈值，来消除感知模块中对物体位置估计的误差，增加滤波器的鲁棒性。但仍然有很多难点需要考虑：
   - 并不是所有的车辆都是运动的：一些静态的车辆，比如停着的车辆也应该是grid map的一部分，不应该被移除： 可以使用目标的历史位置来区分动态与静态目标
-  - 由于感知模块检测到目标之后也需要计算，因此传到下游时会有部分时延，此时动态目标的点云位置已经发生了变化，因此会丢失部分动态目标点云信息：因此我们可以通过对目标跟踪进行轨迹预测，在实际移除时对bounding box沿着预测轨迹进行移动，将更多的可能构成动态目标的点都进行移除
+  - 由于感知模块检测到目标之后也需要计算，因此传到下游时会有部分时延，此时动态目标的点云位置已经发生了变化，因此会丢失部分动态目标点云信息
+  - 因此我们可以通过对目标跟踪进行轨迹预测，在实际移除时对bounding box沿着预测轨迹进行移动，将更多的可能构成动态目标的点都进行移除
 
 ### 2.3.2 3D点云向2D平面进行投影
 在将点云进行预处理之后，接下来就可以将3D点云投影到2D平面上：
@@ -173,7 +175,7 @@ Lanelet的概念于2014年被 Philip Bender 在论文"Lanelets: Efficient Map Re
   - 交规属性，所有可能影响道路段的属性，比如 速度限制；
   - 和其他lanelet element的连接关系 （方便进行遍历遍历搜索）
 
-每个lanelet element都以一个交规元素或交规属性的改变作为结尾。因为有个element可能非常段，只有几米，比如交叉口的一部分；有的却可以很长，有几百米，比如高速公路的一段路线。  
+每个lanelet element都以一个交规元素或交规属性的改变作为结尾。因为有的element可能非常短，只有几米，比如交叉口的一部分；有的却可以很长，有几百米，比如高速公路的一段路线。  
 
 车道边界用一些点的集合进行表示，用来创建一个连续的折线段：
   - 点的位置为gps坐标的x,y,z值，点和点之间可能只有几厘米，也可能有几米，这个由折线的smoothness决定
@@ -185,11 +187,11 @@ Lanelet的概念于2014年被 Philip Bender 在论文"Lanelets: Efficient Map Re
   - Regulatory elements: 通常用线表示，由一组共线点定义。在Regulation elements处通常需要车辆采取相应的动作或做出决策，比如stop line, Traffice lights line, Pedestrian crossings
   - Regulatory attributes: 在整个lanelet中持续存在，比如速度限制，或这个lanelet在十字路口或并道处是否穿过其他lanelet.
 
-**Lanelet Connectivity**
+**Lanelet Connectivity**  
 每个lanelet都有四种可能的联通性：Lanelets directly to the left, lanelets directly to the right, lanelet preceding it, and lanelet following it. 整个lanelet结构是连接在一个有向图中的，是高精地图的基础结构。
-<div align=center><img src=./figs/lanelet_connectivity.png width=400 ></div>
+<div align=center><img src=./figs/lanelet_connectivity.png width=600 ></div>
 
-**Advantages**
+**Advantages**  
 The intersection elements simply holds a pointer to all regulatory elements, which make up the intersection of interest. All lanelet elements which are part of an intersection also point to this intersection element. This structure acts much like a container and simplifies look-ups throughout the lanelet structure when assigning behaviors. 
   - 这种数据结构简化了运动规划的流程，使得计算起来更加高效
   - 在进行复杂多车道路网的路径规划时，为了规划转弯，需要多个连接关系的变化，因为每个lanelet可以当做单独的节点，这种数据结构使得这种规划成为了可能
