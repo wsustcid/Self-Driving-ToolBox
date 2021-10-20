@@ -22,12 +22,14 @@ class Controller2D(object):
         self._set_throttle          = 0
         self._set_brake             = 0
         self._set_steer             = 0
-        self._waypoints             = waypoints
+        self._waypoints             = waypoints # [x, y, v]
         self._conv_rad_to_steer     = 180.0 / 70.0 / np.pi
         self._pi                    = np.pi
         self._2pi                   = 2.0 * np.pi
 
     def update_values(self, x, y, yaw, speed, timestamp, frame):
+        """ Update current states from simultor
+        """
         self._current_x         = x
         self._current_y         = y
         self._current_yaw       = yaw
@@ -38,6 +40,10 @@ class Controller2D(object):
             self._start_control_loop = True
 
     def get_lookahead_index(self, lookahead_distance):
+        """ 
+        1. Find nearest waypoint, get min_dist and min_idx
+        2. Accumulate distance from min_idx and get the waypoint index for the lookahead distance
+        """
         min_idx       = 0
         min_dist      = float("inf")
         for i in range(len(self._waypoints)):
@@ -60,6 +66,8 @@ class Controller2D(object):
         return lookahead_idx
 
     def update_desired_speed(self):
+        """ Get desired speed from the nearest waypoint
+        """
         min_idx       = 0
         min_dist      = float("inf")
         desired_speed = 0

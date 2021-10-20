@@ -74,7 +74,7 @@ class CollisionChecker:
 
                 # Thus, we need to compute:
                 # circle_x = point_x + circle_offset*cos(yaw)
-                # circle_y = point_y circle_offset*sin(yaw)
+                # circle_y = point_y + circle_offset*sin(yaw)
                 # for each point along the path.
                 # point_x is given by path[0][j], and point _y is given by
                 # path[1][j]. 
@@ -82,8 +82,9 @@ class CollisionChecker:
 
                 # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
                 # --------------------------------------------------------------
-                # circle_locations[:, 0] = ... 
-                # circle_locations[:, 1] = ...
+                self._circle_offsets = np.array(self._circle_offsets)
+                circle_locations[:, 0] = path[0][j]+self._circle_offsets*cos(path[2][j]) 
+                circle_locations[:, 1] = path[1][j]+self._circle_offsets*sin(path[2][j])
                 # --------------------------------------------------------------
 
                 # Assumes each obstacle is approximated by a collection of
@@ -164,7 +165,8 @@ class CollisionChecker:
                 # A lower score implies a more suitable path.
                 # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
                 # --------------------------------------------------------------
-                # score = ...
+                paths = np.array(paths)
+                score = np.linalg.norm(paths[i,0:2,-1] - np.array(goal_state[0:2]))
                 # --------------------------------------------------------------
 
                 # Compute the "proximity to other colliding paths" score and
@@ -177,7 +179,8 @@ class CollisionChecker:
                         if not collision_check_array[j]:
                             # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
                             # --------------------------------------------------
-                            # score += self._weight * ...
+                            score += self._weight * \
+                                1.0/np.sum(np.abs(paths[i,0:2,-1] - paths[j,0:2,-1]))
                             # --------------------------------------------------
 
                             pass

@@ -3,7 +3,7 @@
  * @Github: https://github.com/wsustcid
  * @Version: 1.0.0
  * @Date: 2021-10-11 19:51:34
- * @LastEditTime: 2021-10-16 17:15:29
+ * @LastEditTime: 2021-10-20 16:07:49
 -->
 
 - [8. 项目实践](#8-项目实践)
@@ -83,7 +83,7 @@
 ```python
 # 1. 启动仿真器
 ./CarlaUE4.sh /Game/Maps/Course4 -windowed -carla-server -benchmark -fps=30 # for ubuntu
-CarlaUE4.exe /Game/Maps/Course4 -windowed -carla-server -benchmark -fps=30 # for windows
+#CarlaUE4.exe /Game/Maps/Course4 -windowed -carla-server -benchmark -fps=30 # for windows
 
 # 2. 运行规划器
 python3 module_7.py

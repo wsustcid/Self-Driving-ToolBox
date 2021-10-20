@@ -48,7 +48,7 @@ class VelocityPlanner:
 
             # Otherwise, keep checking.
             else:
-                timestep -= time_delta
+                timestep -= time_delta # find the proper intervel that timestep lies in
 
         # Simulation time step exceeded the length of the path, which means we have likely
         # stopped. Return the end velocity of the trajectory.
@@ -210,7 +210,7 @@ class VelocityPlanner:
 
         stop_index = len(path[0]) - 1
         temp_dist = 0.0
-        # Compute the index at which we should stop.
+        # Compute the index at which we should stop with buffer
         while (stop_index > 0) and (temp_dist < stop_line_buffer):
             temp_dist += np.linalg.norm([path[0][stop_index] - path[0][stop_index-1], 
                                          path[1][stop_index] - path[1][stop_index-1]])
@@ -231,13 +231,14 @@ class VelocityPlanner:
             for i in reversed(range(stop_index)):
                 dist = np.linalg.norm([path[0][i+1] - path[0][i], 
                                        path[1][i+1] - path[1][i]])
+                # ws???-self._a_max ? -> +
                 vi = calc_final_speed(vf, -self._a_max, dist)
                 # We don't want to have points above the starting speed
                 # along our profile, so clamp to start_speed.
                 if vi > start_speed:
                     vi = start_speed
 
-                speeds.insert(0, vi)
+                speeds.insert(0, vi) # generate speed from end to start
                 vf = vi
 
             # Generate the profile, given the computed speeds.
@@ -362,6 +363,7 @@ class VelocityPlanner:
         ramp_end_index = min_index
         distance = min_dist
         distance_gap = desired_speed * self._time_gap
+        # ws ??: ToDo: fix to distance < distance_gap 
         while (ramp_end_index > 0) and (distance > distance_gap):
             distance += np.linalg.norm([path[0][ramp_end_index] - path[0][ramp_end_index-1], 
                                         path[1][ramp_end_index] - path[1][ramp_end_index-1]])
@@ -497,8 +499,8 @@ def calc_distance(v_i, v_f, a):
 
     # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
     # ------------------------------------------------------------------
-    # d = ...
-    # return d
+    d = (v_f**2 - v_i**2)/(2*a)
+    return d
     # ------------------------------------------------------------------
 
 ######################################################
@@ -528,7 +530,10 @@ def calc_final_speed(v_i, a, d):
 
     # TODO: INSERT YOUR CODE BETWEEN THE DASHED LINES
     # ------------------------------------------------------------------
-    # v_f = ...
-    # return v_f
+    tmp = v_i**2 + 2*a*d
+    if (tmp<1E-4): v_f = 0.0
+    else: v_f = sqrt(tmp)
+
+    return v_f
     # ------------------------------------------------------------------
 
