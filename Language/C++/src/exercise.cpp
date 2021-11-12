@@ -3,7 +3,7 @@
  * @Github: https://github.com/wsustcid
  * @Version: 1.0.0
  * @Date: 2021-10-30 10:38:08
- * @LastEditTime: 2021-11-09 17:28:54
+ * @LastEditTime: 2021-11-12 19:09:00
  */
 #include<iostream>
 #include<string>
@@ -13,6 +13,10 @@
 #include<unordered_map>
 #include<unordered_set>
 #include<iterator>
+
+#include "Stack.h"
+#include "Matrix.h"
+#include "Triangular.h"
 
 using namespace std;
 
@@ -348,6 +352,54 @@ void iostream_main()
     
 }
 
+void stack_main()
+{
+    Stack stk; string elem;
+    stk.push("hhh");stk.push("hhh");stk.push("hhh");stk.pop(elem);
+    cout << stk.find(elem) << stk.count(elem);
+}
+
+void matrix_main()
+{
+    Matrix mat(4,4);
+}
+
+// 9. 重载 iostream 运算符
+ostream& operator<< (ostream &os, const Triangular &rhs)
+{
+    os << "( " << rhs.beg_pos() << ", " << rhs.length() << " )";
+    rhs.display(rhs.length(), rhs.beg_pos(), os);
+    return os;
+}
+
+istream& operator>>(istream &is, Triangular &rhs)
+{
+    char ch1, ch2;
+    int bp, len;
+    // 假设输入 （3，6） 6 10 
+    is >> ch1 >> bp >> ch2 >> len;
+    //rhs.beg_pos(bp); // 待实现
+    //rhs.length(len);
+    rhs.next_reset();
+    return is;
+}
+
+
+void trian_main()
+{
+    Triangular tri(20);
+    Triangular_iterator it = tri.begin();
+    Triangular_iterator end_it = tri.end();
+    cout << tri.length() << endl;
+    while(it !=end_it)
+    {
+        cout << *it << ' ';
+        ++it;
+    }
+
+    cout << tri<<endl;
+    
+}
 
 int main()
 {
@@ -357,6 +409,12 @@ int main()
     // max_main();
     // countWords_main();
     // sortWords_main();
-    iostream_main();
-
+    // iostream_main();
+    
+    // Stack stk; string elem;
+    // stk.push("hhh");stk.push("hhh");stk.push("hhh");stk.pop(elem);
+    // cout << stk.find(elem) << stk.count(elem);
+    trian_main();
+    
+    
 }

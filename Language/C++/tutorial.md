@@ -2,8 +2,15 @@
  * @Author: Shuai Wang
  * @Github: https://github.com/wsustcid
  * @Version: 1.0.0
+ * @Date: 2021-11-11 16:52:54
+ * @LastEditTime: 2021-11-12 20:07:10
+-->
+<!--
+ * @Author: Shuai Wang
+ * @Github: https://github.com/wsustcid
+ * @Version: 1.0.0
  * @Date: 2021-10-27 22:21:52
- * @LastEditTime: 2021-11-09 15:57:28
+ * @LastEditTime: 2021-11-11 16:49:15
 -->
 - [1. C++ 简明教程](#1-c-简明教程)
   - [1.1 快速入门](#11-快速入门)
@@ -32,6 +39,17 @@
     - [1.3.5 设计泛型算法](#135-设计泛型算法)
     - [1.3.6 典型 Iterator](#136-典型-iterator)
   - [1.4 基于对象编程](#14-基于对象编程)
+    - [1.4.1 类的基础实现](#141-类的基础实现)
+    - [1.4.2 构造函数与析构函数](#142-构造函数与析构函数)
+    - [1.4.3 定常成员函数与可变数据成员](#143-定常成员函数与可变数据成员)
+    - [1.4.4 this指针](#144-this指针)
+    - [1.4.5 静态类成员](#145-静态类成员)
+    - [1.4.6 Iterator Class](#146-iterator-class)
+    - [1.4.7 Friend](#147-friend)
+    - [1.4.8 拷贝赋值运算符(copy assignment operator)](#148-拷贝赋值运算符copy-assignment-operator)
+    - [1.4.9 Function Object](#149-function-object)
+    - [1.4.10 重载 iostream 运算符](#1410-重载-iostream-运算符)
+    - [1.4.11 指向类成员函数的指针](#1411-指向类成员函数的指针)
   - [1.5 面向对象编程](#15-面向对象编程)
 
 # 1. C++ 简明教程
@@ -759,17 +777,355 @@ C++标准库中总共有超过60个泛型算法，一些典型的为
 
 
 ## 1.4 基于对象编程
+在之前的章节中，我们已经广泛运用了很多常用的class: string、vector 以及提供输入输出功能的iostream class。在本章节中，我们来尝试设计并实现自己的class:
+  - class 名称被视为一个类型名称，就像内置类型int,double一样，class的初始化方式根据其构造函数定义，通常有多种方式，最基本的范式为`string str("dummy")`
+  - 每个class都会提供一组操作函数，让我们作用于其实例化后的对象上。这些操作函数包括具名函数，如size()和empty()，以及重载运算符，如equality和assignment运算符
+  - class一般由两部分组成：一组公开的(public)操作函数和运算符； 以及一组私有的(private)实现细节；
+  - 公开的操作函数函数和运算符被称为class的成员函数(member function)，代表这个class的公开接口，class的用户只能访问其公开接口
+  - class的private 实现细节可由成员函数的定义以及与此class相关的任何数据组成
+
+class的用户无需关注class的实现细节，只是利用其公开接口就进行编程，因此，只要类的接口没有更改，即使其实现细节重新打造，所有应用程序代码也不需要进行任何改动，这便是基于对象编程的基本思想。
+
+### 1.4.1 类的基础实现
+本节我们先从编写一个最基本的类开始。但在具体实现一个类之前，我们先从 “抽象”(abstraction)开始，比如我们要实现一个栈，首先要抽象出我们期望其包含的操作行为：
+  - 以 *pushing* 的方式将新值压入堆栈
+  - 以 *popping* 的方式取出最近被压入的值
+  - 以 *peeking* 的方式，查看最后一个被压入的数值
+  - 询问是否已满 *full*，是否为空*empty*，以及stack内的元素个数 *size*
+
+类的具体实现如下：
+```c++
+//// Stack.h file
+#include<vector>
+#include<string>
+using namespace std;
+
+class Stack; // 1. class 前置声明：关键字class + 类名
+
+// 2. class 定义：声明 + 主体
+class Stack{
+public: 
+    bool push(const string&);
+    bool pop(string &elem);
+    bool peek(string &elem);
+
+    bool empty();
+    bool full();
+
+    int size() {return _stack.size();} // 成员函数定义
+
+private:
+    vector<string> _stack;
+};
+
+//// 3. inline member function
+inline bool Stack::empty() { return _stack.empty();}
+
+inline bool Stack::full() { return _stack.size() == _stack.max_size();}
+
+// Stack.cpp file
+#include "Stack.h"
+
+// 5. non-inline member funtion
+bool Stack::pop(string &elem){
+    if (empty()) return false; // 因为已经进行了类作用域解析，成员函数可直接使用
+
+    elem = _stack.back();
+    _stack.pop_back();
+    return true;
+}
+
+bool Stack::peek(string &elem){
+    if (empty()) return false;
+
+    elem = _stack.back();
+    return true;
+}
+
+bool Stack::push(const string &elem){
+    if (full()) return false;
+
+    _stack.push_back(elem);
+    return true;
+}
+```
+
+1. 类的前置声明只是用来将类的名称告诉编译器，并未提供关于此类的任何其他信息，如成员函数及数据成员等，但前置声明使得我们得以进行类指针的定义，或以此class作为数据类型：
+   ```c++
+   // 以下两种写法，必须先有类的前置声明才行
+   Stack *pt = 0;
+   void process(const Stack&)
+   ```
+2. class定义由声明及紧接之后的主体组成，主体由一对括号括住，并以分号结尾
+   - 主体内的两个关键字`public` 和 `private`标示每个块内成员的访问权限：public member 可以在程序的任何地方被访问； private member只能在 member function 和 class friend内被访问
+   - 类的所有成员函数都必须在类的主体内进行声明，但是否同时进行定义，可自由决定
+   - 如果要在类主体内定义，该成员函数会被自动视为 inline 函数，如本例中的 size()
+  
+3. 类的成员函数也可主体外进行定义，需要使用类作用域解析运算符`::`，用来编译器分辨该函数属于哪一个类
+   - 如果希望该函数为inline，在最前面加上关键字inline即可
+   - 对于inline函数，定义与类的主体内或主体外没有分别，但同其他 non-member inline function一样，要把它放在头文件中
+
+4. 通常，类的定义和其 inline member function 需要放在与该class同名的.h头文件中,用户想要使用该class时，包含该头文件即可
+   
+5. non-inline member function 在程序代码中定义，通常放在和class同名，扩展名为`.cpp`的文件中
 
 
+### 1.4.2 构造函数与析构函数
+上一小节中我们主要介绍了class的基本构成和定义方法，特别是member function 的定义，但忽略了一个重要问题，class中的data member如何初始化呢？这就需要我们事先提供一个或多个特别的初始化函数，编译器会在每次class object 被定义出来时，调用适当的函数加以处理，这些特别的函便是构造函数(constructor)。
+
+**构造函数**
+  - 构造函数的名称必须与class名称相同，且不用指定返回类型，因此也没有返回值
+  - 构造函数可以被重载，因此我们可以一次定义多个构造函数，当类对象被实例化后，编译器便自动根据获的参数，挑选出应被调用的constructor
+  - 具体例子见 [Triangular class](./src/Triangular.h) 定义
+  ```c++
+  // 1. 类对象调用构造函数
+  Triangular t1; // 调用无任何参数的默认构造函数
+  Triangular t2=8; // 调用包含一个参数的构造函数，等价于 Triangular t2(8)
+  Triangular t3(10, 3); // 调用包含两个参数的构造函数
+  Triangular t4(); // 错误！这样会把t4定义成参数列表为空，一个返回值类型为Triangular的函数！
+  ```
+
+除了按照上述方法在构造函数体内对数据成员采用默认值或指定参数进行初始化，我们还可以通过成员初始化列表进行初始化：
+  - 成员初始化列表紧接在参数列表最后的冒号后面，各参数之间用逗号分隔
+  - 欲赋值给数据成员的数值放在成员名称后面的小括号内
+  - 成员初始化列表主要用于将参数传给 member class object的构造函数
+  ```c++
+  Triangular::Triangular(const Triangualr &rhs): _length(rhs._length), _beg_pos(rhs._beg_pos), _next(rhs._beg_pos-1) { }
+  ```
+
+**析构函数**  
+和构造函数对应的是析构函数(destructor)。所谓析构函数是用户自定义的一个类成员，一旦某个类提供有析构函数，当其object结束生命时，便会自动调用destructor处理善后：主要是释放constructor中或对象生命周期中分配的资源
+  - 析构函数的名称有严格的规定，类名称再加上`~`前缀，它不仅没有返回值，也没有任何参数
+  - 因为参数列表为空，因此析构函数也没法被重载
+  - 具体例子见[Matrix class](./src/Matrix.h)的定义，构造函数使用new表达式从heap中分配double数组所需的空间，而destructor则负责释放这些内存
+
+但析构并非绝对必要的，比如我们上面的Triangular的例子，三个数据成员均是以储值(by value)的方式来存放，这些数据成员在类对象定义之后便已存在，当对象结束其声明周期时被释放，因此，并不需要我们定义析构函数。实际上，c++最难得部分之一便是了解何时需要定义析构函数何时不需要。
+
+**成员逐一初始化与拷贝构造函数**  
+除了在构建对象时通过构造函数将初值传入进行数据成员的初始化，我们也可使用某个已经实例化的类对象作为另一个类对象的初值: `Triangular tri1(8); Triangular tri2 = tri1;`, 类内的数据成员会被依次复制，即执行默认的成员逐一初始化操作
+  - 上述操作对Triangular类是没有问题的，但对于Matrix类则会出现问题，因为执行成员的逐一拷贝时，两个类对象的_pmat指针会指向同一个位置，而依次执行析构函数时，前面的析构函数已经将该内存空间释放，后面的析构函数就会引发错误
+
+为了解决这个问题，我们为Matrix提供一个拷贝构造函数(Copy Constructor):
+  - 拷贝构造函数的唯一参数是一个 const reference, 指向一个Matrix的 对象，然后在函数内部改变成员逐一初始化的默认行为模式
+  - 具体来讲，我们通过产生一个独立的数组复本，使某个对象的析构操作不至于影响另一个对象
+
+  ```c++
+  Matrix::Matrix(const Matrix &rhs): _row(rhs.row), _col(rhs.col)
+  {
+    int n = _row*_col;
+    _pmat = new double[n]; // 产生一份复本
+    for (int i=0; i<n; i++) _pmat[i] = rhs._pat[i];
+  }
+  ```
+
+因此，当我们设计class时，必须思考在此class之上进行“成员逐一初始化”的行为模式是否适当，如果可以，则不必提供拷贝构造函数；否则，则必须重新定义拷贝构造函数。当然，如果我们定义了拷贝构造函数，也需要重新定义拷贝赋值运算符，这个我们后面再介绍。
+
+### 1.4.3 定常成员函数与可变数据成员
+首先我们先来看一个小函数：
+  ```c++
+  int sum(const Triangular &train){
+    int beg_pos = train.beg_pos(), length = train.length(), sum = 0;
+    for (int i=0; i<lenght; i++>) sum += train.elem(beg_pos+ix);
+    return sum; 
+  }
+  ```
+上面的train是个const reference, 即编译器必须保证train在sum()中不会被修改，但sum()中调用的任何一个member function都有可能更改train的值。编译器要保证sum中调用的成员函数，如begin_pos, length(), elem都不会更改其调用者，那么编译器怎么知道他们不会更改呢？我们就需要将这个成员函数标注为const,来告诉编译器：这个成员函数不会更改对象的内容。
+  - 要实现const对成员函数的修饰，需要将const置于参数列表之后，函数体花括号之前
+  - 如果成员函数在class主体之外定义，就必须在声明和定义中都指定const
+  - 虽然编译器不会对每个函数进行分析，决定它究竟是const还是non-const，但它会检查每个声明为const的成员函数，看他们是否真的没有更改类对象的内容
+
+我们再来看上述sum()的另一个版本：
+  ```c++
+  int sum(const Triangular &train){
+    if (!train.length()) return 0;
+    int val, sum = 0; 
+    train.next_reset();
+    while(train.next(val)) sum += val;
+    return sum;
+  }
+  ```
+上述函数确无法通过编译，因为我们train声明为了一个const object，但我们调用next_reset()和next()时确对train的数据成员`_next`进行了修改，或者说next_reset()，next()都不是const member function, 确被const object调用，于是必然造成错误
+
+但我们换种思维方式，数据成员`_length`和`_beg_pos`提供了数列的抽象属性，如果我们改变对其进行改变，就相当与改变了数列的长度和起始位置，即对对象train的状态进行了改变。但数据成员`_next`只是我们用来对train的数据元素进行迭代的，改变`_next`其实并没有对class object状态造成影响，即并没有破坏对象的常量性！
+  - 因此，关键字`mutable`就是为了让我们做出这种声明：对_next所做的更改并不会破坏class object的常量性
+
+最后，通过将`_next`声明为`mutable`，next()和next_reset()便既可以修改_next的值，又可以被声明为 const member function, 第二个版本的sum()实现便没有问题了！
+
+### 1.4.4 this指针
+当我们希望用一个对象复制出另一个对象，这时就需要我们定义一个copy()成员函数，用于将一个对象数据成员的值作为另一个对象的初值：
+  ```c++
+  Triangular tr1(8);
+  Triangular tr2(8,9);
+  tr1.copy(tr2);
+
+  Triangular& Triangular::copy(const Triangular &rhs)
+  {
+    if (this != &rhs){
+      _length = rhs._length;
+      _beg_pos = rhs._beg_pos;
+      _next = rhs._beg_pos-1;
+    }
+    return *this; // 想要返回tr1,只需要提领this指针
+  }
+  ```
+在copy()函数的实现中，我们涉及到了一个新的概念，this 指针：this指针在成员函数内用来指向其调用者(对象)，在本例中，便是tr1。为什么我们可以直接使用呢？这是因为编译器会自动将this指针加到每一个成员函数的参数列表，在参数列表内声明`Triangular *this`
+
+### 1.4.5 静态类成员
+**Static Data Member**  
+在第二章中我们曾定义了一个局部静态 vector 用来存储Fibonnacci数列元素，以避免函数运行时数列元素的重复运算。现在我们设计的类内也需要一个唯一的容器来存储数列元素，我们同样使用static关键字来实现
+  - static data member 用来表示唯一的，可共享的数据成员，它可以在同一类的所有对象中被访问
+  - 对于class而言，静态数据成员只有唯一的一份实体，因此我们同样需要在程序代码文件中提供其清楚的定义，类似于全局对象的定义，但这里需要加上class scope 运算符：`vector<int> Triangular::_elems;`, 除了定义，我们也可以直接指定初值：`int Triangluar::_initial_size=8`;
+  - 如果要在类成员函数内访问静态数据成员，其访问方式和普通的非静态数据成员一致
+
+**Static Member Function**  
+  - 通常情况下，我们都是通过类的某个对象来对其成员函数进行调用，这个对象会被绑定至该成员函数的this指针，通过存储与每个对象中的this指针，成员函数才能够访问存储于每个对象中的 non-static data member;
+  - 但我们如果我们的成员函数并没有访问任何 non-static data member, 他的工作和任何对象都没有关联，比如只是访问static data member,如我们Triangular 类中的 is_elem()，我们还要将他与对象绑定吗？
+  - 当然不用，我们只需要将此成员函数声明为static，在函数的声明前加上关键字static，后续使用时就可以直接使用，而不是通过对象调用
+  - 调用方式为 `Triangular::is_elem(8);` 当然 class scope 运算符是必不可少的，不然不知道是哪一个类的is_elem();
+  - 和static data member 一样，当我们在class主体外部进行成员函数的定义时，无需重复加上关键字static
+
+### 1.4.6 Iterator Class
+本节我们来亲自实现一个Iterator class，通过对其实现来了解如何对class进行运算符的重载操作。首选，我们希望能够实现如下操作：
+  ```c++
+  Triangular trian(1, 8);
+  Triangualr::iterator it = trian.begin(), end_it = trian.end();
+  while(it!=end_it)
+  {
+    cout << *it << ' ';
+    ++it;
+  }
+  ```
+
+为了让上述代码能够工作，我们必须为此iterator class 定义 `!=, *, ++` 等运算符:
+  - 实际实现见[Triangual_iterator class 实现](./src/Triangular_iterator.h)
+  - 我们可以像定义成员函数那样来定义运算符：运算符函数和普通函数类似，但他们不需要指定函数名，只需要在运算符前面加上`operator`关键字即可
+  - 具体来讲，我们定义Triangular_iterator class用来维护一个索引值，用以索引Triangular中用来存储数列元素的那个 static data member, 即 _elems
+  - 为了能够索引Triangular的数据成员，Triangular必须赋予Triangualr_iterator成员函数特殊的访问权限（即通过friend机制实现）
+  - 具体运算符函数的实现，以`==` 运算符为例：如果两个Triangular_iterator对象的 _index相等，我们便认为这两个对象相等
+
+  ```c++
+  // 通过运算符重载，我们就可以将运算符直接作用于我们新定义的类对象
+  if (trian1 == trian2) ...
+  // 如果我们希望将运算符作用于指针所指的对象，就得先提领该指针，取出所指对象：
+  if (*ptril == *ptril) ...
+  ```
+
+运算符重载主要包含以下几个规则：
+  - 不可以引入新的运算符，除了`., .*, ::, ?:`四个运算符，其他的运算符皆可被重载
+  - 运算符的操作数个数不可被改变，每个二元运算符都需要两个操作数，一元运算符都需要恰好一个操作数
+  - 运算符的优先级不可改变，例如除法的运算符优先级永远高于加法
+  - 运算符函数的参数列表中，必须至少有一个参数为class类型，也就是是说，我们无法为诸如指针之类的non-class类型，重新定义其原已存在的运算符，当然更无法为它引入新的运算符
+
+到此为止，我们仅仅对运算符进行了重载，我们还需要为Triangular提供一组begin()/end()成员函数，并支持上述iterator的定义，这需要用到 嵌套类型 (nested type)的概念。具体实现参见[Triangual class 实现](./src/Triangular.h)
+
+**嵌套类型**  
+typedef 可以为某个类型设定另一个不同的名称，其通用形式为：`typedef existing_type new_name`:
+  - 其中`existing_type`可以是任何一个内置类型、符合类型或class类型
+  - 在我们的例子中，我们用iterator等同于Triangular_iterator，以简化其形式
+  - 使用时通过`Triangular::iterator it = trian.begin();` class scope运算符来指引编译器，让他看到iterator这个字眼时，查看Triangular内提供的定义，如果我们直接 `iterator it = trian.begin()`，则必然出现错误
+
+这样我们将iterator嵌套放在每个“提供iterator抽象概念”的class内，我们就可以提供有着相同名称的多个定义：
+  - `Fibonacci::iterator fit = fib.begin();`
+  - `Pell::iterator pit = pell.begin();`
+  - `string::iterator sit = file_name.begin();`
 
 
+### 1.4.7 Friend
+在上一节中，我们定义的non-member function operator*()竟然直接访问了Triangular的私有数据成员_elems, 也访问了Triangular_iterator 的私有成员函数 check_integrity()！这是因为任何class都可以将其他function或class指定为朋友(friend):
+  - 所谓friend，便具备了与 class member function 相同的访问权限，可以访问class的私有成员
+  - 因此，为了让operator*()通过编译，不论Triangular 还是 Triangular_iterator 都必须将operator*()声明为“朋友”
+  - 也就是说，只要在某个函数原型前加上关键字friend，就可以将它声明为某个class的friend，这份声明可以出现在class定义的任意位置上，不受private或public的影响
+  - 如果你需要将数个重载函数都声明为某个class的friend，必须明确的为每个函数都加上friend,比如我们实现的operator*() 的两个版本
+
+除了将函数声明为friend，我们也可以令class A 与 class B 建立friend关系，借此让class A的所有member function 都称为class B的friend，例如
+  ```c++
+  class Triangular {
+    friend class Triangular_iterator; // 这样Triangular_iterator的所有member function都是 Triangular 的friend
+  }
+  ```
+
+注意，友谊的建立通常是为了效率考虑，例如在某个non-member运算符函数中进行Point和Matrix的乘法运算，如果我们只是希望进行某个data member的读取和写入，那么为他提供具有public访问权限的inline 函数，就是建立友谊之外的一个替代方案。
 
 
+### 1.4.8 拷贝赋值运算符(copy assignment operator)
+默认情况下，当我们将某个class object 赋值给另一个，比如 `Triangular tri1(8), tri2(8,9); tri1 = tri2;`：
+  - 对象tri2的数据成员会被依次复制给tri1，即默认的成员逐一复制操作
+  - 对于Triangular这个类，使用默认的成员逐一复制即可，我们不需要做其他事情，但对于之前提到的Matrix class,使用这种复制方式便会出现问题（两个指针指向同一个位置）
+
+因此我们需要一个拷贝构造函数和一个拷贝赋值运算符，前者在1.4.2节已经介绍过，这里我们来看Matrix的copy assignment operator的定义，详见 [Matrix.cpp](./src/Matrix.cpp)
+
+只要class设计这明确提供了拷贝赋值运算符，他就会被用来取代"默认的成员逐一复制操作"，当然，对于类的使用者来说，他们在使用时没有任何区别，只需要重新编译即可。
 
 
+### 1.4.9 Function Object
+在3.6节中，我们直接使用了一些标注库事先定义好的function object，本节我们来自己实现一个function object。所谓function object,是一种“提供有function call运算符”的类，当编译器在编译过程中遇到`lt(ival);` lt 其实有三种可能：
+  - lt是函数名称
+  - lt是函数指针
+  - lt是一个提供了function call 运算符的 函数对象，即编译器会将其转化为`lt.operator(ival);`
 
+Funciton call 运算符可以接受任意个数的参数：零个，一个，两个或更多。比如可以用来支持Matrix的多维度下标操作，因为正常的下标运算符只能接受一个参数。
 
+接下来我们定义一个LessThan class，用来提供一个function object, 来测试传入值是否小于某个指定值。该类包含一个基值，每个类对象初始化时都必须设定为基值。具体的例子参见 [LessThan.h](./src/LessThan.h)
 
+### 1.4.10 重载 iostream 运算符
+我们可以很自然的使用输出运算符 `cout << "hello world";`来对字符串对象进行输出，但如果使我们自己新定义的class object，还可以直接用输入输出运算符进行读取和写入操作吗？当然不行，需要我们另外提供一份重载的output运算符，从而实现`cout << trian << endl;` 以及 `cin >> trian;`
+  - 在实现中，我们传入ostream的对象又被原封不动的返回，这样就可以串接多个输出运算符
+  - 虽然参数列表中两个对象皆是以传址的形式传入，但ostream对象并未声明为const，因为每个output操作都会更改ostream 的内部状态
+  - 另一个疑问是我们为何没有把output运算符设计成Triangular的成员函数呢？因为如果是成员函数，他的左操作数就必须是隶属于同一个class的对象，这样我们调用时就必须是`tri<<cout;`的形式
+
+  ```c++
+   ostream& operator<< (ostream &os, const Triangular &rhs)
+   {
+       os << "( " << rhs.beg_pos() << ", " << rhs.length() << " )";
+       rhs.display(rhs.length(), rhs.beg_pos(), os);
+       return os;
+   }
+
+   istream& operator>>(istream &is, Triangular &rhs)
+   {
+       char ch1, ch2;
+       int bp, len;
+       // 假设输入 （3，6） 6 10 
+       is >> ch1 >> bp >> ch2 >> len;
+       //rhs.beg_pos(bp); // 待实现
+       //rhs.length(len);
+       rhs.next_reset();
+       return is;
+   }
+   // 测试
+   Triangular tri(20);
+    Triangular_iterator it = tri.begin();
+    Triangular_iterator end_it = tri.end();
+    cout << tri.length() << endl;
+    while(it !=end_it)
+    {
+        cout << *it << ' ';
+        ++it;
+    }
+
+    cout << tri<<endl;
+  ```
+
+### 1.4.11 指向类成员函数的指针
+在之前的章节中，我们通过完整了的实现了Triangular类，了解了类的实现所涉及的知识点。通过此例子，我们便可以很快地实现其他数列，区别仅仅在于数列的产生算法不同。本节我们希望能够实现一个通用的数列类 num_sequence，使其对象能够同时支持6种数列：
+  ```c++
+  int main()
+  {
+    num_sequence ns;
+    const int pos = 8;
+    for (int x = 1; i<num_sequence::num_of_sequence(); ++i)
+    {
+      ns.set_sequence(num_sequence::ns_type[ix]);
+      int elem_val = ns.elem(pos);
+      display(cout, ns, pos, elem_val);
+    }
+  }
+  ```
+num_sequence 的设计关键在于，运用一个指向成员函数的指针，这种指针和我们之前介绍的指向非成员函数的指针比较相似：
+  - 二者都需要指定其返回类型和参数列表，不过，指向成员函数的指针还需要表明它所指的是哪一个class：`void (num_sequence::*pm)(int) = 0`
+  - 声明一个指向num_sequnce 成员函数的指针，且该成员函数的返回值必须为void，且参数列表必须是单个int，初始值为0代表暂时不指向任何一个成员函数
+  - 上述指针的定义方式过于复杂，我们可以用嵌套类型加以简化 `typedef void (num_sequence::*PtrType)(int);`
+  - 这样我们对函数名称进行取址（同样也需要加上类名），就可以定义并初始化一个指向具体的成员函数的指针：`PtrType pm = &num_sequence::fibonacci;`
 
 
 
