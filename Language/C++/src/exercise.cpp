@@ -3,7 +3,7 @@
  * @Github: https://github.com/wsustcid
  * @Version: 1.0.0
  * @Date: 2021-10-30 10:38:08
- * @LastEditTime: 2021-11-12 19:09:00
+ * @LastEditTime: 2021-11-16 17:07:48
  */
 #include<iostream>
 #include<string>
@@ -17,6 +17,9 @@
 #include "Stack.h"
 #include "Matrix.h"
 #include "Triangular.h"
+#include "LibMat.h"
+#include "num_sequence.h"
+#include "BTnode.h"
 
 using namespace std;
 
@@ -288,6 +291,11 @@ void countWords_main()
     }
 }
 
+
+/********************** Chapter 4: Generic Programming *************************
+ * 1. 容器的定义、初始化、插入、查询、迭代遍历
+ * 2. iostream iterator
+ *********************************************************************************/
 // 定义函数对象
 class LessThan {
 public:
@@ -401,6 +409,68 @@ void trian_main()
     
 }
 
+
+
+/********************** Chapter 5: Generic Programming *************************
+ * 1. 容器的定义、初始化、插入、查询、迭代遍历
+ * 2. iostream iterator
+ *********************************************************************************/
+void print(const LibMat &mat)
+{
+    cout << "In global print(): about to print mat.print() \n";
+    // 根据mat所指向的实际对象，解析该执行哪一个对象的 print member function
+    mat.print();
+}
+
+void libmat_main()
+{
+    cout << "Creating a LibMat object to print() \n";
+    LibMat libmat;
+    print(libmat);
+
+    cout << "Creating a Book object to print()\n";
+    Book book("The castle", "Franz Kafka");
+    print(book);
+
+    cout << "Creating an AudioBook object to print() \n";
+    AudioBook abook("Man", "Robert", "Ken");
+    print(abook);
+}
+
+
+// ostream& operator<<(ostream &os, const num_sequence &ns)
+// {
+//     return ns.print(os);
+// }
+
+void ns_main()
+{
+    Fibonacci fibo;
+
+    fibo.print();
+}
+
+
+
+/********************** Chapter 6: Generic Programming *************************
+ * 1. 容器的定义、初始化、插入、查询、迭代遍历
+ * 2. iostream iterator
+ *********************************************************************************/
+void tree_main()
+{
+    BinaryTree<string> bt;
+    bt.insert("P"); bt.insert("E");
+    bt.insert("R"); bt.insert("T");
+    bt.insert("C"); bt.insert("P");
+    bt.insert("K");
+    cout<<"Preorder traversal: \n";
+    // bt.preorder();
+
+    // bt.remove("P");
+    // bt.preorder();
+}
+
+
 int main()
 {
     // qucik_start();
@@ -414,7 +484,11 @@ int main()
     // Stack stk; string elem;
     // stk.push("hhh");stk.push("hhh");stk.push("hhh");stk.pop(elem);
     // cout << stk.find(elem) << stk.count(elem);
-    trian_main();
+    // trian_main();
+
+    // libmat_main();
+
+    ns_main();
     
     
 }
