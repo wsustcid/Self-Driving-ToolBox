@@ -1,0 +1,44 @@
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+LABEL maintainer="hyzhai@mail.ustc.edu.cn" date="2020.6.15"
+
+ENV CUDA_HOME="/usr/local/cuda-10.1"
+
+RUN apt-get update \
+    && apt-get install -y git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 \
+    && apt-get install -y wget vim build-essential sudo \
+    # change timezone and avoid interaction when install tzdata
+    && export DEBIAN_FRONTEND=noninteractive \
+    && apt-get install -y tzdata \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && rm -f /etc/localtime \
+    && dpkg-reconfigure -f noninteractive tzdata \
+    # add user
+    && useradd -u 1368 -m -s /bin/bash worker  \
+    && echo "root:123456" | chpasswd \
+    && echo "worker:123456" | chpasswd \
+    && usermod -aG sudo worker \
+    # clean
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER worker
+WORKDIR /home/worker
+
+# install miniconda3
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda3.sh \
+    && bash ./miniconda3.sh -b -p miniconda3/ \
+    && rm miniconda3.sh
+ENV PATH="/home/worker/miniconda3/bin:/home/worker/miniconda3/condabin:$PATH"
+
+RUN conda update --all -y \
+    # install base package
+    && conda install -y ipython opencv matplotlib pandas scikit-learn scikit-image \ 
+    tqdm seaborn beautifulsoup4 lxml html5lib \
+    # install pytorch
+    && conda install pytorch torchvision cudatoolkit=10.1 -c pytorch \
+    # install mmdetection dependencies
+    && pip install cython --no-cache-dir \
+    && pip install pyhocon mmcv terminaltables instaboostfast cityscapesscripts --no-cache-dir \
+    && pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools" \
+    # clean
+    && conda clean --all

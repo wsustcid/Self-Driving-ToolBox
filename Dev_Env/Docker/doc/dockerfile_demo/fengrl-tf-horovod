@@ -1,0 +1,7 @@
+FROM nvcr.io/nvidia/tensorflow:19.07-py3
+MAINTAINER Ruili Feng  <frl1996@mail.ustc.edu.cn>
+# Install basic dependencies
+RUN pip --no-cache-dir install keras==2.2.5 \
+    && pip --no-cache-dir install pillow \
+    && pip --no-cache-dir install toposort \
+    && pip --no-cache-dir install horovod \

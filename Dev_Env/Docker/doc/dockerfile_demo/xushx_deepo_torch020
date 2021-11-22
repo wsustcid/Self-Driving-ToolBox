@@ -1,0 +1,6 @@
+FROM bit:5000/deepo
+
+MAINTAINER larry (sxu@mail.ustc.edu.cn)
+
+RUN pip install --no-cache-dir http://download.pytorch.org/whl/cu80/torch-0.2.0.post2-cp36-cp36m-manylinux1_x86_64.whl torchvision==0.1.8 imageio tqdm tensorboardX==1.6 && \
+  pip install --no-cache-dir -U protobuf

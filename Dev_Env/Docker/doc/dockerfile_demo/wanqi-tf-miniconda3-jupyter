@@ -1,0 +1,44 @@
+FROM nvidia/cuda:10.0-cudnn7-runtime
+ARG HOME="/home"
+ENV HOME="${HOME}"
+WORKDIR ${HOME}
+
+# u:g 1489:1489 on server
+RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y sudo wget vim gcc g++ && \
+    groupadd -g 1489 wanqi && useradd -u 1489 -g wanqi wanqi && \
+    echo "\nwanqi ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+
+ARG ANACONDA="https://repo.continuum.io/miniconda/Miniconda3-4.7.12.1-Linux-x86_64.sh"
+RUN wget --quiet ${ANACONDA} -O anaconda.sh && \
+    /bin/bash anaconda.sh -b -p conda && \
+    rm anaconda.sh && \
+    echo ". ${HOME}/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc
+ENV PATH="${HOME}/conda/bin:${PATH}"
+
+# Setup Jupyter notebook configuration
+ENV NOTEBOOK_CONFIG="${HOME}/.jupyter/jupyter_notebook_config.py"
+RUN mkdir ${HOME}/.jupyter && \
+    echo "c.NotebookApp.token = ''" >> ${NOTEBOOK_CONFIG} && \
+    echo "c.NotebookApp.ip = '0.0.0.0'" >> ${NOTEBOOK_CONFIG} && \
+    echo "c.NotebookApp.allow_root = True" >> ${NOTEBOOK_CONFIG} && \
+    echo "c.NotebookApp.open_browser = False" >> ${NOTEBOOK_CONFIG} && \
+    echo "c.MultiKernelManager.default_kernel_name = 'python3'" >> ${NOTEBOOK_CONFIG}
+
+
+# Setup Conda environment
+ENV PATH="${HOME}/conda/bin:${PATH}"
+COPY base.yaml .
+RUN pip --no-cache-dir config set global.index-url http://pypi.douban.com/simple && \
+    pip --no-cache-dir config set global.trusted-host pypi.douban.com && \
+    conda env update -f base.yaml && \
+    conda clean -fay && \
+    python -m ipykernel install --user --name 'python3' --display-name 'python3' && \
+    chmod 777 -R ${HOME} && \
+    apt-get autoremove && apt autoclean
+WORKDIR /
+EXPOSE 8888
+

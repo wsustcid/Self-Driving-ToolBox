@@ -1,0 +1,76 @@
+FROM pytorch/pytorch:1.5-cuda10.1-cudnn7-runtime
+
+RUN APT_INSTALL="apt-get install -y --no-install-recommends" && \
+    PIP_INSTALL="python -m pip --no-cache-dir install --upgrade" && \
+    GIT_CLONE="git clone --depth 10" && \
+    CONDA_INSTALL="conda install -y" && \
+    rm -rf /var/lib/apt/lists/* \
+           /etc/apt/sources.list.d/cuda.list \
+           /etc/apt/sources.list.d/nvidia-ml.list && \
+    apt-get update && \
+# ==================================================================
+# tools
+# ------------------------------------------------------------------
+    DEBIAN_FRONTEND=noninteractive $APT_INSTALL \
+        apt-utils \
+        build-essential \
+        ca-certificates \
+        cmake \
+        wget \
+        git \
+        vim \
+        htop \
+        tmux \
+        openssh-client \
+        openssh-server \
+        libboost-dev \
+        libboost-thread-dev \
+        libboost-filesystem-dev \
+        libglib2.0-0 \
+        libsm6 \
+        libxext6 \
+        libxrender-dev \
+        && \
+    conda config --set show_channel_urls yes && \
+    $CONDA_INSTALL \
+        Cython \
+        ffmpeg \
+        h5py \
+        torchvision \
+        future \
+        pyyaml \
+        cffi \
+        Pillow \
+        six \
+        scipy \
+        matplotlib \
+        tqdm \
+        scikit-learn \
+        && \
+    conda install -c conda-forge python-lmdb && \
+    $PIP_INSTALL \
+        visdom \
+        opencv-python \
+        opencv-contrib-python \
+        munkres \
+        nibabel \
+        pytest \
+        wget \
+        gym \
+        && \
+    conda clean -y --all && \
+# ==================================================================
+# config & cleanup
+# ------------------------------------------------------------------
+    ldconfig && \
+    apt-get clean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* ~/* && \
+# ==================================================================
+# add a user for test 
+# ------------------------------------------------------------------
+    pass=$(perl -e 'print crypt($ARGV[0], "password")' "10086") && \
+    useradd -m -s /bin/bash -G users,video -p $pass yolo
+
+EXPOSE 6006
+CMD ["/bin/bash"]

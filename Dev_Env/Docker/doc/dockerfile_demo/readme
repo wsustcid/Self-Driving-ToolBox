@@ -1,0 +1,8 @@
+These are some reference Dockerfiles, which may guide you to make a qualified image.
+
+The requirements for your building docker image:
+1. SIZE less than 10G
+2. CAN NOT commit image
+3. In principle, NUMBER of your own images less than 3
+4. PROVIDE information of new added packages
+5. BASED on OFFICIAL image (NOT need Tesla brand)

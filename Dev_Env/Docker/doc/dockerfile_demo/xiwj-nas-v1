@@ -1,0 +1,48 @@
+# ==================================================================
+# module list
+# ------------------------------------------------------------------
+# python        3.7    (docker)
+# pytorch       1.5    (docker)
+# scipy         1.2.1  (pip)
+# sacred        0.8.1  (pip)
+# ==================================================================
+FROM pytorch/pytorch:1.5-cuda10.1-cudnn7-runtime
+
+RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
+    APT_INSTALL="apt-get install -y --no-install-recommends" && \
+    PIP_INSTALL="python -m pip --no-cache-dir install --upgrade -i https://pypi.tuna.tsinghua.edu.cn/simple" && \
+    GIT_CLONE="git clone --depth 10" && \
+    CONDA_INSTALL="conda install -y" && \
+    rm -rf /var/lib/apt/lists/* \
+           /etc/apt/sources.list.d/cuda.list \
+           /etc/apt/sources.list.d/nvidia-ml.list && \
+    apt-get update && \
+# ==================================================================
+# pip
+# ------------------------------------------------------------------
+    $PIP_INSTALL \
+        numpy \
+        Pillow \
+        opencv_python \
+        scikit-learn \
+        scipy==1.2.1 \
+        matplotlib \
+        yacs \
+        tqdm \
+        tensorboardX \
+        argparse \
+        progressbar2 \
+        path.py \
+        h5py \
+        blessings \
+        scikit-image \
+        sacred \
+        && \
+# ==================================================================
+# config & cleanup
+# ------------------------------------------------------------------
+    ldconfig && \
+    apt-get clean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* ~/*
+EXPOSE 6006

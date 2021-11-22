@@ -1,0 +1,20 @@
+FROM bit:5000/ubuntu18.04_cuda10.1_devel_cudnn7
+RUN rm -f /etc/apt/sources.list.d/cuda.list &&\
+    rm -f /etc/apt/sources.list.d/nvidia-ml.list &&\
+    apt-get update &&\
+    apt-get -y upgrade &&\
+    apt install -y python3.7 &&\
+    ln -s /usr/bin/python3.7  /usr/local/bin/python &&\
+    apt install -y python3.7-dev &&\
+    apt install -y python3-pip &&\
+    python3.7 -m pip --no-cache-dir install pip &&\
+    python -m pip --no-cache-dir install --upgrade pip==10.0 &&\
+    python -m pip --no-cache-dir install Cython==0.29.14 &&\
+    python -m pip --no-cache-dir install numpy==1.17 &&\
+    python -m pip --no-cache-dir install setuptools==41.6.0 wheel==0.33.6 &&\
+    python -m pip --no-cache-dir install scipy==1.3.1 &&\
+    python -m pip --no-cache-dir install pandas==1.0.4 &&\
+    python -m pip --no-cache-dir install tensorflow_gpu==1.14.0 reckit==0.1.1 &&\
+    python -m pip --no-cache-dir install sklearn &&\
+    apt-get autoclean && apt-get autoremove
+

@@ -1,0 +1,10 @@
+ARG PYTORCH_VERSION=1.3-cuda10.1-cudnn7-devel
+
+FROM pytorch/pytorch:$PYTORCH_VERSION
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /workspace
+COPY requirements.txt .
+RUN pip install -r requirements.txt

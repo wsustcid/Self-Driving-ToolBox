@@ -1,0 +1,61 @@
+ARG CUDA="9.0"
+ARG CUDNN="7"
+
+FROM nvidia/cuda:${CUDA}-cudnn${CUDNN}-devel-ubuntu16.04
+# MAINTAINER fangshancheng <fangshancheng@iie.ac.cn>
+# ==================================================================
+# module list
+
+# ------------------------------------------------------------------
+# python        2.7    (apt)
+# pytorch       0.4.1  (pip)
+# tensorflow    1.5 (pip)
+# opencv        3.4.1  (git)
+# ==================================================================
+RUN sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list && \
+    APT_INSTALL="apt-get install -y --no-install-recommends" && \
+    PIP_INSTALL="python -m pip --no-cache-dir install --upgrade" && \
+    GIT_CLONE="git clone --depth 10" && \
+
+    rm -rf /var/lib/apt/lists/* \
+           /etc/apt/sources.list.d/cuda.list \
+           /etc/apt/sources.list.d/nvidia-ml.list && \
+
+    apt-get update && \
+    apt-get -y upgrade
+# ==================================================================
+# tools
+# ------------------------------------------------------------------
+RUN apt-get install -y ca-certificates cmake wget git vim openssh-client openssh-server python-pip python-dev \
+        && \
+    $PIP_INSTALL \
+        pip
+RUN apt-get install -y libsm6 libxext6 libxrender-dev libglib2.0-0 \
+        libatlas-base-dev \
+	libboost-all-dev \
+	libgflags-dev \
+	libgoogle-glog-dev \
+	libhdf5-serial-dev \
+	libleveldb-dev \
+	liblmdb-dev \
+	libopencv-dev \
+	libprotobuf-dev \
+	libsnappy-dev
+RUN pip2 --no-cache-dir install --upgrade pip
+RUN pip2 --no-cache-dir install setuptools numpy scipy pandas scikit-learn matplotlib Cython
+RUN pip2 --no-cache-dir install pycocotools h5py
+RUN pip2 --no-cache-dir install http://download.pytorch.org/whl/cu90/torch-1.1.0-cp27-cp27mu-linux_x86_64.whl
+RUN pip2 --no-cache-dir install torchvision==0.4.1
+RUN pip2 --no-cache-dir install lmdb Pillow editdistance opencv-python natsort Colour
+RUN pip2 --no-cache-dir install jupyterlab
+# ==================================================================
+# config & cleanup
+# ------------------------------------------------------------------
+RUN ldconfig && \
+    apt-get clean && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/* /tmp/* ~/*
+
+EXPOSE 8888
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
