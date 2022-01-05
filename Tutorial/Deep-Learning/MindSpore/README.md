@@ -3,7 +3,7 @@
  * @Github: https://github.com/wsustcid
  * @Version: 1.0.0
  * @Date: 2021-12-31 15:09:25
- * @LastEditTime: 2022-01-04 21:37:25
+ * @LastEditTime: 2022-01-04 23:41:13
 -->
 - [MindSpore](#mindspore)
   - [使用MindSpore训练手写数字识别模型](#使用mindspore训练手写数字识别模型)
