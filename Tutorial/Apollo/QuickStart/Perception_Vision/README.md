@@ -3,7 +3,7 @@
  * @Github: https://github.com/wsustcid
  * @Version: 1.0.0
  * @Date: 2022-01-06 16:17:04
- * @LastEditTime: 2022-01-07 15:35:37
+ * @LastEditTime: 2022-01-07 15:42:52
 -->
 - [2.3 Apollo视觉感知模块](#23-apollo视觉感知模块)
   - [2.3.1 视觉感知模块的原理](#231-视觉感知模块的原理)
@@ -108,12 +108,12 @@ Apollo视觉感知模块的输入输出示意图如下所示
 
 5. 修改输出的 channel 名称：视觉障碍物检测默认的输出 channel 为 /perception/obstacles，不会在 Dreamview 上显示检测结果。如果想要在 Dreamview 上可视化结果，需要修改下面文件的一部分关键字
    ```bash
-  # 打开文件
-  vim modules/perception/production/conf/perception/camera/fusion_camera_detection_component.pb.txt
-  # 定位到第 10 行，修改为：
-  output_final_obstacles : true
-  # 定位到第 11 行，修改为：
-  output_obstacles_channel_name : "/apollo/perception/obstacles"
+   # 打开文件
+   vim modules/perception/production/conf/perception/camera/fusion_camera_detection_component.pb.txt
+   # 定位到第 10 行，修改为：
+   output_final_obstacles : true
+   # 定位到第 11 行，修改为：
+   output_obstacles_channel_name : "/apollo/perception/obstacles"
    ``` 
 
 6. 启动视觉障碍物检测模块：注意：成功启动的判定标准是观察处理器的显存不再发生变化或者 cyber 日志尾部输出结束信息

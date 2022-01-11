@@ -3,7 +3,7 @@
  * @Github: https://github.com/wsustcid
  * @Version: 1.0.0
  * @Date: 2021-11-19 20:43:31
- * @LastEditTime: 2022-01-06 16:24:05
+ * @LastEditTime: 2022-01-11 11:14:55
 -->
 - [2. 快速入门](#2-快速入门)
   - [2.1 Dreamview](#21-dreamview)
@@ -36,13 +36,21 @@ Apollo Cyber RT 是一个开源高性能的运行时框架，专为自动驾驶�
 本小节主要介绍Apollo视觉感知模块，主要包含Apollo视觉感知模块的整体结构以及各个模块的主要组成部分，最终对视觉感知模块的输入输出有一个比较清晰的认识。
 
 ## 2.4 [Perception_Lidar](./Perception_Lidar/README.md)
+本小节主要介绍Apollo激光雷达感知模块的流程及算法，对算法的基本原理以及该模块的处理流程、输入输出有一个大致的了解。
 
 ## 2.5 [Perception_Fusion](./Perception_Fusion/README.md)
+本章节主要介绍Apollo感知融合模块的基本原理、输入输出以及channel信息
 
 ## 2.6 [Localization](./Localization/README.md)
+本小节主要介绍Apollo的定位模块以及Apollo (Multi-sensor Fusion)的原理
 
 ## 2.7 [Planning](./Planning/README.md)
+规划是自动驾驶中重要的模块。规划模块基于预测模块输入的障碍物信息、地图定位信息、路径导航信息对车辆的未来的运动轨迹进行规划，保证自动驾驶车辆高效、安全、舒适的行至目标位置。
+
+本小节主要介绍规划模块的基本原理以及输入输出，帮助开发者快速了解规划模块的运作机制，方便开发者开展后续的模块开发任务
 
 ## 2.8 [Prediction](./Prediction/README.md)
+本小节为开发者介绍 Apollo 预测模块的基本知识，包括预测模块在自动驾驶系统中的主要作用，预测模块的基本组成以及预测模块的输入输出。
 
 ## 2.9 [Control](./Control/README.md)
+本小节为开发者介绍 Apollo 控制模块的基本知识、Apollo 控制能力、控制模块的组成及其输入输出。
