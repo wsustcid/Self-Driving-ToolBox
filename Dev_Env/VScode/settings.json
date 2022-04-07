@@ -1,0 +1,165 @@
+{
+    "latex-workshop.latex.tools": [
+      {
+        "name": "xelatex",
+        "command": "xelatex",
+        "args": [
+          "-synctex=1",
+          "-interaction=nonstopmode",
+          "-file-line-error",
+          "%DOC%"
+        ]
+      },
+      {
+        "name": "pdflatex",
+        "command": "pdflatex",
+        "args": [
+          "-synctex=1",
+          "-interaction=nonstopmode",
+          "-file-line-error",
+          "%DOC%"
+        ]
+      },
+      {
+        "name": "latexmk",
+        "command": "latexmk",
+        "args": [
+          "-synctex=1",
+          "-interaction=nonstopmode",
+          "-file-line-error",
+          "-pdf",
+          "%DOC%"
+        ]
+      },
+      {
+        "name": "bibtex",
+        "command": "bibtex",
+        "args": [
+          "%DOCFILE%"
+        ]
+      }
+    ],
+  
+    "latex-workshop.latex.recipes": [
+      {
+        "name": "xelatex -> bibtex -> xelatex*2",
+        "tools": [
+          "xelatex",
+          "bibtex",
+          "xelatex",
+          "xelatex"
+        ]
+      },
+      {
+        "name": "XeLaTeX",
+        "tools": [
+          "xelatex"
+        ]
+      },
+      {
+        "name": "PDFLaTeX",
+        "tools": [
+          "pdflatex"
+        ]
+      },
+      {
+        "name": "latexmk",
+        "tools": [
+          "latexmk"
+        ]
+      },
+      {
+        "name": "BibTeX",
+        "tools": [
+          "bibtex"
+        ]
+      },
+      {
+        "name": "pdflatex -> bibtex -> pdflatex*2",
+        "tools": [
+          "pdflatex",
+          "bibtex",
+          "pdflatex",
+          "pdflatex"
+        ]
+      },
+    ],
+      // 自动清除
+      "latex-workshop.latex.autoClean.run": "onBuilt",
+      
+      // fileheader
+      "fileheader.configObj": {
+          "createFileTime": false,
+          "language": {
+            "languagetest": {
+              "head": "/$$",
+              "middle": " $ @",
+              "end": " $/"
+            },
+            "py":{
+              "head": "'''",
+              "middle": "@",
+              "end": "'''"
+            },
+            "tex":{
+              "head": "% % % % % % % % % % % % % % %",
+              "middle": "%",
+              "end": "% % % % % % % % % % % % % % %"
+            }
+          },
+          "autoAdd": true,
+          "autoAlready": true,
+          "annotationStr": {
+            "head": "/*",
+            "middle": " * @",
+            "end": " */",
+            "use": false
+          },
+          "headInsertLine": {
+            "php": 2
+          },
+          "beforeAnnotation": {},
+          "afterAnnotation": {},
+          "specialOptions": {},
+          "switch": {
+            "newlineAddAnnotation": true
+          },
+          "prohibitAutoAdd": [
+            "json"
+          ],
+          "moveCursor": true,
+          "dateFormat": "YYYY-MM-DD HH:mm:ss",
+          "atSymbol": "@",
+          "atSymbolObj": {},
+          "colon": ": ",
+          "colonObj": {}
+        },
+    
+        "fileheader.customMade": {
+          "Author": "Shuai Wang",
+          "Github": "https://github.com/wsustcid",
+          "Version": "0.0.0",
+          "Date": "Do not edit",
+          "LastEditTime": "Do not edit"
+        },
+    
+        "fileheader.cursorMode": {
+            "description": "",
+            "param": "",
+            "return": ""
+        },
+        "editor.wordWrap": "on",
+        "editor.minimap.maxColumn": 40,
+        "latex-workshop.view.pdf.viewer": "tab",
+        "editor.fontSize": 14,
+        "editor.unicodeHighlight.allowedLocales": {
+          "zh-hans": true,
+          "zh-hant": true
+        },
+        "security.workspace.trust.untrustedFiles": "open",
+        "[latex]": {
+        
+          "editor.formatOnPaste": false,
+          "editor.suggestSelection": "recentlyUsedByPrefix"
+        },
+  }
