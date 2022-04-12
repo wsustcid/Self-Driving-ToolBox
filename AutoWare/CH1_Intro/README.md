@@ -3,7 +3,7 @@
  * @Github: https://github.com/wsustcid
  * @Version: 0.0.0
  * @Date: 2022-03-22 19:47:22
- * @LastEditTime: 2022-04-09 16:03:55
+ * @LastEditTime: 2022-04-09 17:24:23
 -->
 
 ## 1. Autoware概述
@@ -168,8 +168,8 @@ roslaunch autoware_quickstart_examples my_motion_planning.launch
 1. `my_map.launch`的主要功能是读入构成高精地图的几种核心元素，其数据来源主要是`.autoware/data/`文件夹下的数据：
     - 通过`rosparam`读入`.yaml`配置文件，主要是baselink和velodyne之间的位姿变换关系
     - 使用`include`包含另一个`tf.launch`文件，载入word_to_map, map_to_mobilty之间的位姿变换关系
-    - 使用`node`启动`points_map_load`载入pcd点云地图数据
-    - 使用`node`启动`vector_map_load`载入csv存储的地图元素数据，包括车道线、人行道、停止线等信息
+    - 使用`node`启动`map_file`包中的`points_map_load`载入pcd点云地图数据
+    - 使用`node`启动`map_file`包中的`vector_map_load`载入csv存储的地图元素数据，包括车道线、人行道、停止线等信息
 
 2. `my_localization.launch`分别启动几个launch文件实现车辆定位
     - 使用`setup.launch`完成对激光雷达与车辆相对位姿参数的载入

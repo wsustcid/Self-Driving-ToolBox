@@ -3,7 +3,7 @@
  * @Github: https://github.com/wsustcid
  * @Version: 0.0.0
  * @Date: 2022-03-22 19:46:02
- * @LastEditTime: 2022-04-09 16:14:58
+ * @LastEditTime: 2022-04-12 09:16:43
 -->
 
 # Autoware自动驾驶框架源码剖析与实践
@@ -14,6 +14,7 @@
   - [Wiki 文档](https://github.com/Autoware-AI/autoware.ai/wiki)
   - [documentation](https://autoware.readthedocs.io/en/feature-documentation_rtd/)
   - [AutoWare.auto](https://gitlab.com/autowarefoundation/autoware.auto)
+  - [awf-course](https://www.autoware.org/awf-course)
 
   - [课程代码及作业代码](https://gitee.com/ren_sixu/autoware.test.git)
   - [数据集链接](https://pan.baidu.com/s/1L6q6AuYpK2xmLKNJo1E_NA) 密码: g1a4
@@ -23,4 +24,5 @@
 ## 1. [Autoware 概述](./CH1_Intro/README.md)
 本章节主要对Autoware的安装配置进行了介绍，并通过实际运行`autoware_quickstart_examples`对其基本模块的功能进行了初步的了解。
 
-## 2. [Autoware建图模块](Mapping/README.md)
+
+## 2. [Autoware建图模块](./CH2_Mapping/README.md)
